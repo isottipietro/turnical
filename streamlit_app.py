@@ -111,7 +111,7 @@ st.title("📅 Convertitore Turni: PDF -> iCal")
 
 col1, col2 = st.columns(2)
 with col1:
-    mese_selezionato = st.number_input("Mese", min_value=1, max_value=12, value=datetime.now().month+1)
+    mese_selezionato = st.number_input("Mese", min_value=1, max_value=12, value=datetime.now().month+ relativedelta(months=1))
 with col2:
     anno_selezionato = st.number_input("Anno", min_value=2024, max_value=2050, value=datetime.now().year)
 
