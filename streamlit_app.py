@@ -113,7 +113,7 @@ col1, col2 = st.columns(2)
 with col1:
     mese_selezionato = st.number_input("Mese", min_value=1, max_value=12, value=datetime.now().month % 12 + 1)
 with col2:
-    anno_selezionato = st.number_input("Anno", min_value=2024, max_value=2050, value=datetime.now().year)
+    anno_selezionato = st.number_input("Anno", min_value=2024, max_value=2050, value=datetime.now().year  + (1 if oggi.month == 12 else 0))
 
 nome_utente = st.text_input("Inserisci il tuo Cognome e Nome")
 file_caricato = st.file_uploader("Carica il PDF", type="pdf")
