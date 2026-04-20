@@ -68,7 +68,7 @@ def estrai_turni_da_pdf(file_pdf, nome_utente):
 def crea_file_ical(lista_turni, anno, mese):
     cal = Calendar()
     cal.add('prodid', '-//Turni Web App//')
-    cal.add('version', '2.0')
+    cal.add('version', '1.0')
     tz = pytz.timezone('Europe/Rome')
 
     for giorno, lettera_turno in enumerate(lista_turni, start=1):
@@ -111,11 +111,11 @@ st.title("📅 Convertitore Turni: PDF -> iCal")
 
 col1, col2 = st.columns(2)
 with col1:
-    mese_selezionato = st.number_input("Mese", min_value=1, max_value=12, value=datetime.now().month)
+    mese_selezionato = st.number_input("Mese", min_value=1, max_value=12, value=datetime.now().month+1)
 with col2:
     anno_selezionato = st.number_input("Anno", min_value=2024, max_value=2050, value=datetime.now().year)
 
-nome_utente = st.text_input("Inserisci il tuo Nome e Cognome")
+nome_utente = st.text_input("Inserisci il tuo Cognome e Nome")
 file_caricato = st.file_uploader("Carica il PDF", type="pdf")
 
 if file_caricato and nome_utente:
@@ -129,7 +129,7 @@ if file_caricato and nome_utente:
                 st.download_button(
                     label="📥 Scarica file .ics",
                     data=io.BytesIO(dati_ical),
-                    file_name=f"turni_{nome_utente}_{mese_selezionato}.ics",
+                    file_name=f"Turni_{nome_utente}_{mese_selezionato}.ics",
                     mime="text/calendar"
                 )
             else:
