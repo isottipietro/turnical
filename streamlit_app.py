@@ -3,36 +3,56 @@ from icalendar import Calendar, Event
 from datetime import datetime, timedelta
 import pytz
 import io
+import pdfplumber
 
 # ==========================================
 # 1. CONFIGURAZIONE DEI TURNI
 # ==========================================
 orari_turni = {
-    'M': {'inizio': '07:30', 'fine': '13:12'},
-    'P': {'inizio': '14:18', 'fine': '20:00'}, 
-    'G': {'inizio': '08:00', 'fine': '13:42'}, 
-    'G1': {'inizio': '08:30', 'fine': '14:12'}, 
-    'G2': {'inizio': '09:00', 'fine': '14:42'},
-    'G3': {'inizio': '10:48', 'fine': '18:30'} 
+    'M': {'nome': 'Mattina', 'inizio': '07:30', 'fine': '13:12'},
+    'P': {'nome': 'Pomeriggio', 'inizio': '14:18', 'fine': '20:00'}, 
+    'G': {'nome': 'Giornata', 'inizio': '08:00', 'fine': '13:42'}, 
+    'G1': {'nome': 'Giornata 1', 'inizio': '08:30', 'fine': '14:12'}, 
+    'G2': {'nome': 'Giornata 2', 'inizio': '09:00', 'fine': '14:42'},
+    'G3': {'nome': 'Giornata 3', 'inizio': '10:48', 'fine': '18:30'},
+    'Pr': {'nome': 'Permesso', 'tutto_giorno': True}, # Turno speciale
+    'R':  None 
 }
 
 # ==========================================
 # 2. FUNZIONI
 # ==========================================
 def estrai_turni_da_pdf(file_pdf, nome_utente):
-    """
-    ATTENZIONE: Questa è una funzione simulata.
-    Qui andrà inserita la logica con pdfplumber per leggere il tuo PDF specifico.
-    Per ora, restituisce una lista finta di 30 giorni per farti testare l'app.
-    """
+    turni_trovati = []
+    nome_utente = nome_utente.lower().strip()
+    
+    with pdfplumber.open(file_pdf) as pdf:
+        for page in pdf.pages:
+            # Estrae la tabella dalla pagina
+            table = page.extract_table()
+            if not table:
+                continue
+            
+            for row in table:
+                # Pulizia della riga per il confronto (rimuove None e spazi)
+                row_cleaned = [str(cell).strip() if cell else "" for cell in row]
+                
+                # Cerchiamo se il nome dell'utente è in questa riga (solitamente prima colonna)
+                if any(nome_utente in cell.lower() for cell in row_cleaned):
+                    # Supponendo che i turni inizino dopo il nome (es. dalla colonna 1 in poi)
+                    # Adatta l'indice [1:] in base a quante colonne di "intestazione" ci sono
+                    turni_trovati = row_cleaned[1:] 
+                    return turni_trovati # Trovato, usciamo
+    return None
+
     # Simuliamo un mese di turni casuali per testare l'app
-    return ['R', 'R', 'R', 'G', 'G', 'G', 'Pr'] # R = Riposo, Pr = Permesso
+    #return ['R', 'R', 'R', 'G', 'G', 'G', 'Pr'] # R = Riposo, Pr = Permesso
 
 def crea_file_ical(lista_turni, anno, mese):
     """Prende la lista di lettere e genera il contenuto del file .ics"""
     cal = Calendar()
     cal.add('prodid', '-//Turni Web App//')
-    cal.add('version', '2.0')
+    cal.add('version', '1.0')
     tz = pytz.timezone('Europe/Rome')
 
     for giorno, lettera_turno in enumerate(lista_turni, start=1):
@@ -42,23 +62,31 @@ def crea_file_ical(lista_turni, anno, mese):
         except ValueError:
             break 
 
-        if lettera_turno in orari_turni and orari_turni[lettera_turno] is not None:
-            turno = orari_turni[lettera_turno]
+        # Gestione Turno Intero (Pr)
+        if config.get('tutto_giorno'):
+            event.add('dtstart', data_evento.date())
+            # Per lo standard iCal, il giorno di fine è esclusivo, quindi aggiungiamo +1
+            event.add('dtend', (data_evento + timedelta(days=1)).date())
+        else:
+            # Turni con orario
+            ora_i, min_i = map(int, config['inizio'].split(':'))
+            ora_f, min_f = map(int, config['fine'].split(':'))
             
-            ora_inizio, min_inizio = map(int, turno['inizio'].split(':'))
-            inizio = tz.localize(datetime(anno, mese, giorno, ora_inizio, min_inizio))
-            
-            ora_fine, min_fine = map(int, turno['fine'].split(':'))
-            fine = tz.localize(datetime(anno, mese, giorno, ora_fine, min_fine))
+            inizio = tz.localize(datetime(anno, mese, giorno, ora_i, min_i))
+            fine = tz.localize(datetime(anno, mese, giorno, ora_f, min_f))
             
             if fine <= inizio:
-                fine += timedelta(days=1) # Turno a cavallo della mezzanotte
+                fine += timedelta(days=1)
 
-            event = Event()
-            event.add('summary', f'Turno {lettera_turno}')
             event.add('dtstart', inizio)
             event.add('dtend', fine)
-            cal.add_component(event)
+            
+        # --- NOTA SUL COLORE ---
+        # iCalendar non supporta nativamente i colori di Google Calendar.
+        # L'unico modo è assegnare una CATEGORY, ma Google spesso la ignora.
+        event.add('categories', config['nome'])
+            
+        cal.add_component(event)
 
     return cal.to_ical()
 
