@@ -23,21 +23,46 @@ orari_turni = {
 # 2. FUNZIONI
 # ==========================================
 def estrai_turni_da_pdf(file_pdf, nome_utente):
-    nome_utente = nome_utente.lower().strip()
+    nome_utente = nome_utente.upper().strip()
+    turni_trovati = []
     
     with pdfplumber.open(file_pdf) as pdf:
-        for page in pdf.pages:
-            table = page.extract_table()
-            if not table:
-                continue
-            
-            for row in table:
-                row_cleaned = [str(cell).strip() if cell else "" for cell in row]
-                # Controllo se il nome è presente in qualche cella della riga
-                if any(nome_utente in cell.lower() for cell in row_cleaned):
-                    # Cerchiamo di capire dove iniziano i turni (escludendo il nome)
-                    # Se il nome è nella prima colonna, prendiamo dalla seconda in poi
-                    return row_cleaned[1:] 
+        # Analizziamo il testo completo della pagina per maggiore flessibilità
+        testo_pagina = pdf.pages[0].extract_text()
+        righe = testo_pagina.split('\n')
+        
+        for i, riga in enumerate(righe):
+            # Se troviamo il nome dell'utente in questa riga
+            if nome_utente in riga.upper():
+                # I turni in questo PDF sembrano essere nelle righe immediatamente successive 
+                # o nella stessa riga dopo il nome. 
+                # Proviamo a raccogliere tutte le "lettere singole" che troviamo nelle vicinanze.
+                
+                contesto = " ".join(righe[i:i+3]) # Prende la riga del nome + le 2 successive
+                
+                # Cerchiamo i codici turno validi (M, P, G, G1, G2, G3, R, Pr, Ag)
+                # Usiamo le regex per isolare solo i codici validi separati da spazi
+                import re
+                codici_validi = ['M', 'P', 'G', 'G1', 'G2', 'G3', 'R', 'Pr', 'Ag']
+                
+                # Trova parole composte da codici validi o lettere singole
+                token = contesto.split()
+                percorso_turni = []
+                
+                for t in token:
+                    # Se il token è uno dei nostri codici, lo aggiungiamo
+                    if t in codici_validi:
+                        percorso_turni.append(t)
+                    # Gestione casi in cui il PDF attacca le lettere (es. "RGP")
+                    elif len(t) <= 3 and any(c in t for c in "MPGR"):
+                        # Spezziamo le lettere singole se sono attaccate
+                        for char in t:
+                            if char in "MPGR": percorso_turni.append(char)
+
+                # Ritorna la lista se abbiamo trovato qualcosa
+                if percorso_turni:
+                    return percorso_turni
+                    
     return None
 
 def crea_file_ical(lista_turni, anno, mese):
