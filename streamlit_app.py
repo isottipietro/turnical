@@ -9,11 +9,11 @@ import pdfplumber
 # 1. CONFIGURAZIONE DEI TURNI
 # ==========================================
 orari_turni = {
-    'M': {'nome': 'Mattina', 'inizio': '07:30', 'fine': '13:12'},
-    'P': {'nome': 'Pomeriggio', 'inizio': '14:18', 'fine': '20:00'}, 
-    'G': {'nome': 'Giornata', 'inizio': '08:00', 'fine': '13:42'}, 
-    'G1': {'nome': 'Giornata 1', 'inizio': '08:30', 'fine': '14:12'}, 
-    'G2': {'nome': 'Giornata 2', 'inizio': '09:00', 'fine': '14:42'},
+    'M': {'nome': 'Mattina', 'inizio': '07:30', 'fine': '12:42'},
+    'P': {'nome': 'Pomeriggio', 'inizio': '14:48', 'fine': '20:00'}, 
+    'G': {'nome': 'Giornata', 'inizio': '08:00', 'fine': '13:12'}, 
+    'G1': {'nome': 'Giornata 1', 'inizio': '08:30', 'fine': '13:42'}, 
+    'G2': {'nome': 'Giornata 2', 'inizio': '09:00', 'fine': '14:12'},
     'G3': {'nome': 'Giornata 3', 'inizio': '10:48', 'fine': '18:30'},
     'Pr': {'nome': 'Permesso', 'tutto_giorno': True},
     'R':  None 
