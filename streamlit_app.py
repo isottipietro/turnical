@@ -114,13 +114,13 @@ with col2:
 
 nome_utente = st.text_input("Inserisci COGNOME NOME")
 
+file_caricato = st.file_uploader("Carica il PDF", type="pdf")
+
 # --- SEZIONE IMPOSTAZIONI AGGIUNTIVE ---
 with st.expander("⚙️ Impostazioni"):
     usa_allattamento = st.checkbox("👶 Attiva orario ridotto (Allattamento)")
     # Qui potrai aggiungere altre st.checkbox o st.selectbox in futuro
-
-file_caricato = st.file_uploader("Carica il PDF", type="pdf")
-
+    
 if file_caricato and nome_utente:
     if st.button("Genera Calendario"):
         with st.spinner("Analisi in corso..."):
