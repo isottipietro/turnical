@@ -17,8 +17,8 @@ orari_turni_standard = {
     'G2': {'nome': 'Giornata 2', 'inizio': '09:00', 'fine': '16:42'},
     'G3': {'nome': 'Giornata 3', 'inizio': '10:48', 'fine': '18:30'},
     'Pr': {'nome': 'Permesso', 'tutto_giorno': True},
-    'R': None;
-    'F': None;
+    'R': None,
+    'F': None,
     'Ro': None
 }
 
