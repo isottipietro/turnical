@@ -112,7 +112,7 @@ with col1:
 with col2:
     anno_selezionato = st.number_input("Anno", min_value=2024, max_value=2050, value=datetime.now().year  + (1 if datetime.now().month == 12 else 0))
 
-nome_utente = st.text_input("Inserisci COGNOME NOME")
+nome_utente = st.text_input("Inserisci COGNOME NOME (esattamente come scritto nel pdf)")
 
 file_caricato = st.file_uploader("Carica il PDF", type="pdf")
 
